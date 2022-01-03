@@ -6,3 +6,5 @@ Camera.pyはRaspberryPi上で動かし、ffmpegを使ってTSファイルを作�
 
 2021/12/21　その他で試したことも追加  
 参考URL:https://www.letitride.jp/entry/2020/07/18/234941
+
+2022/01/03　OpenCVでTSファイルを生成。プラットフォームに依存するので使えない時もある。
