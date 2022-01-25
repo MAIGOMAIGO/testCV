@@ -20,7 +20,6 @@ class CameraClass(threading.Thread):
 
     def run(self):
         self.z=0
-        threads = []
         self.cap.open(self.num)
         while self.enable:
             #30fps * 3s
@@ -29,23 +28,23 @@ class CameraClass(threading.Thread):
                 if ret == False:
                     print('カメラ',self.num,'から映像を取得できませんでした。')
                     break
-                #jpeg encode
-                self.img = cv2.resize(self.frame, (720, 480))
-                encode_parms = [int(cv2.IMWRITE_JPEG_QUALITY),95]
-                ret, self.enimg = cv2.imencode('.jpg',self.img,encode_parms)
-                with open('/tmp/StreamImg/cam'+str(self.num)+'stream'+str(self.z)+'img'+ str(i) +'.jpg','ab') as wf:
-                    wf.write(self.enimg)
+                threading.Thread(target=self.makeImg,args=(self.frame,self.z,i)).start()
             else:
-                ts = threading.Thread(target=self.makeTs)
-                threads.append(ts)
-                ts.start()
+                threading.Thread(target=self.makeTs).start()
                 self.z+=1
                 continue
             # cam not found
             break
-        ts.join()
         self.cap.release()
-
+        
+    def makeImg(self,frame,z,i):
+        #jpeg encode
+        self.img = cv2.resize(frame, (720, 480))
+        encode_parms = [int(cv2.IMWRITE_JPEG_QUALITY),95]
+        ret, self.enimg = cv2.imencode('.jpg',self.img,encode_parms)
+        with open('/tmp/StreamImg/cam'+str(self.num)+'stream'+str(z)+'img'+ str(i) +'.jpg','ab') as wf:
+            wf.write(self.enimg)
+            
     def makeTs(self):
         d = copy.deepcopy(self.z)
         cmd = "ffmpeg -y -r 30 -i /tmp/StreamImg/cam"+str(self.num)+"stream"+str(d)+"img%d.jpg "\
